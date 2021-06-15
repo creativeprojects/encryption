@@ -26,6 +26,11 @@ func init() {
 	echoHandler.HandleFunc("/plain", func(rw http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "" {
+			rw.Header().Set("Content-Type", contentType)
+		}
+
 		_, err := io.Copy(rw, r.Body)
 		if err != nil {
 			panic(err)
@@ -33,6 +38,11 @@ func init() {
 	})
 	echoHandler.HandleFunc("/encrypted", func(rw http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "" {
+			rw.Header().Set("Content-Type", contentType)
+		}
 
 		wrapper := NewResponseWriter(encrypter, rw)
 
@@ -73,6 +83,9 @@ func TestWithEncryption(t *testing.T) {
 	returned, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	assert.NotEqual(t, message, returned)
+
+	assert.Equal(t, "application/octet-stream", resp.Header.Get("Content-Type"))
+	assert.Equal(t, "text/plain", resp.Header.Get("X-Content-Type"))
 
 	server.Close()
 }
