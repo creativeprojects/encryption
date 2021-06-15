@@ -34,6 +34,10 @@ func NewEncrypter(passphrase, salt []byte) (*Encrypter, error) {
 	}, nil
 }
 
+func (e *Encrypter) NonceSize() int {
+	return e.aesgcm.NonceSize()
+}
+
 func (e *Encrypter) Key() []byte {
 	return e.key
 }
