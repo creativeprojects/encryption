@@ -33,7 +33,9 @@ func (rw *ResponseWriter) Header() http.Header {
 
 func (rw *ResponseWriter) Write(source []byte) (int, error) {
 	data := rw.encrypter.EncryptWithNonce(source, rw.nonce)
-	return rw.writer.Write(data)
+	_, err := rw.writer.Write(data)
+	// the http server is expecting the original length written back
+	return len(source), err
 }
 
 func (rw *ResponseWriter) WriteHeader(statusCode int) {
