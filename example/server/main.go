@@ -22,13 +22,13 @@ func main() {
 	// generate a random salt
 	salt := make([]byte, 41)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	// create the encryption handler around your usual handler
 	handler, err := encryption.NewHandler(passphrase, salt, mux)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	log.Printf("Service is listening on port %d...", port)

@@ -116,3 +116,34 @@ func TestWithEncryption(t *testing.T) {
 
 	server.Close()
 }
+
+func TestResponseDecryption(t *testing.T) {
+	message := []byte("This is a test!")
+	reader := bytes.NewReader(message)
+	server := httptest.NewServer(testHandler)
+	client := server.Client()
+
+	req, err := http.NewRequest(http.MethodPost, server.URL+"/echo", reader)
+	require.NoError(t, err)
+
+	AddAcceptEncryptionHeader(req.Header)
+	req.Header.Set(contentTypeHeader, "text/plain")
+
+	resp, err := client.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	assert.Equal(t, "text/plain", resp.Header.Get(contentTypeHeader))
+	assert.Equal(t, ContentEncoding, resp.Header.Get(contentEncodingHeader))
+
+	// t.Log(resp.Header)
+	// t.Log(hex.Dump(returned))
+
+	plaintext, err := DecryptResponse(resp, passphrase)
+	require.NoError(t, err)
+
+	// decryption successfull
+	assert.Equal(t, message, plaintext)
+
+	server.Close()
+}
