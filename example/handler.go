@@ -1,10 +1,3 @@
-# encryption-handler
-
-Proof of concept of a poor man's encryption over http (without using SSL/TLS)
-
-## Server side
-
-```go
 package main
 
 import (
@@ -46,18 +39,3 @@ func writeString(w http.ResponseWriter, payload string) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf8")
 	_, _ = io.WriteString(w, payload+"\n")
 }
-
-
-```
-
-See the standard response:
-
-```
-% curl -v http://localhost:3001
-```
-
-See the encrypted response:
-
-```
-curl -v -H "Accept-Encoding: aesgcm" http://localhost:3001
-```

@@ -1,26 +1,34 @@
-package main
+package encryption
 
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
-type EncryptionHandler struct {
+type Handler struct {
 	encrypter *Encrypter
+	next      http.Handler
 }
 
-func NewEncryptionHandler(passphrase []byte) (*EncryptionHandler, error) {
-	encrypter, err := NewEncrypter(passphrase, []byte(DefaultSalt))
+func NewHandler(passphrase, salt []byte, nextHandler http.Handler) (*Handler, error) {
+	encrypter, err := NewEncrypter(passphrase, []byte(salt))
 	if err != nil {
 		return nil, fmt.Errorf("cannot create encrypter: %w", err)
 	}
-	return &EncryptionHandler{
+	return &Handler{
 		encrypter: encrypter,
+		next:      nextHandler,
 	}, nil
 }
 
-func (h *EncryptionHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	// writer := NewResponseWriter(h.encrypter, rw)
+func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if !strings.Contains(req.Header.Get(acceptEncodingHeader), ContentEncoding) {
+		h.next.ServeHTTP(rw, req)
+		return
+	}
+	writer := NewEncryptedWriter(h.encrypter, rw)
+	h.next.ServeHTTP(writer, req)
 }
 
-var _ http.Handler = &EncryptionHandler{}
+var _ http.Handler = &Handler{}

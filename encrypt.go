@@ -1,4 +1,4 @@
-package main
+package encryption
 
 import (
 	"crypto/aes"
@@ -9,13 +9,14 @@ import (
 )
 
 type Encrypter struct {
+	salt   []byte
 	key    []byte
 	aesgcm cipher.AEAD
 	nonce  []byte
 }
 
 func NewEncrypter(passphrase, salt []byte) (*Encrypter, error) {
-	key, err := scrypt.Key(passphrase, salt, N, r, p, 32)
+	key, err := scrypt.Key(passphrase, salt, scrypt_N, scrypt_r, scrypt_p, 32)
 	if err != nil {
 		return nil, fmt.Errorf("cannot generate an encryption key: %w", err)
 	}
@@ -28,6 +29,7 @@ func NewEncrypter(passphrase, salt []byte) (*Encrypter, error) {
 		return nil, fmt.Errorf("cannot create a Galois Counter Mode for AES: %w", err)
 	}
 	return &Encrypter{
+		salt:   salt,
 		key:    key,
 		aesgcm: aesgcm,
 		nonce:  []byte{},
@@ -36,6 +38,10 @@ func NewEncrypter(passphrase, salt []byte) (*Encrypter, error) {
 
 func (e *Encrypter) NonceSize() int {
 	return e.aesgcm.NonceSize()
+}
+
+func (e *Encrypter) Salt() []byte {
+	return e.salt
 }
 
 func (e *Encrypter) Key() []byte {

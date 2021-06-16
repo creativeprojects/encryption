@@ -1,4 +1,4 @@
-package main
+package encryption
 
 import (
 	"crypto/aes"
@@ -15,7 +15,7 @@ type Decrypter struct {
 }
 
 func NewDecrypter(passphrase, salt []byte) (*Decrypter, error) {
-	key, err := scrypt.Key(passphrase, salt, N, r, p, 32)
+	key, err := scrypt.Key(passphrase, salt, scrypt_N, scrypt_r, scrypt_p, 32)
 	if err != nil {
 		return nil, fmt.Errorf("cannot generate encryption key: %w", err)
 	}

@@ -1,4 +1,4 @@
-module github.com/creativeprojects/encryption-handler
+module github.com/creativeprojects/encryption
 
 go 1.16
 
